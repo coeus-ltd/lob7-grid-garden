@@ -14,6 +14,15 @@ each garden by making all flowers green. The four gardens use a known reversible
 scramble, so each is solvable. **Undo**, **Hint** and **Reset garden** remain
 available while playing. Use **Next garden** to continue after a win.
 
+**New garden** grows a fresh 4×4 garden: 8 to 12 distinct random presses are
+applied to a fully blooming board, so it is always solvable by construction.
+If a draw leaves the board already solved, the draw is retried a bounded number
+of times before falling back to a fixed seed. During a generated garden,
+**Original gardens** returns to the four classics. Wins in both modes show the
+move count. The last mode, garden and move history are stored in
+`localStorage` (guarded if storage is unavailable) and the board is rebuilt
+from the seed and history on reload.
+
 Keyboard: Tab to a tile, arrows to move focus, Space or Enter to activate.
 Mouse and touch use the same real tile buttons. There is no time limit. The
 game emits bounded `lob7:game` lifecycle messages only when embedded in LOB7;

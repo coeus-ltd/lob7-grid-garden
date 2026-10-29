@@ -1,9 +1,9 @@
 {
   "title": "Grid Garden",
-  "description": "A calm little puzzle about growing a garden. Tapping one tile changes its neighbours: find the pattern that makes every flower bloom. Four hand-made, solvable gardens, undo, and gentle hints. No timer or account needed.",
+  "description": "A calm little puzzle about growing a garden. Tapping one tile changes its neighbours: find the pattern that makes every flower bloom. Four hand-made, solvable gardens plus an endless New garden mode that grows a fresh solvable 4×4 board every time, with undo, gentle hints and progress saved in the browser. No timer or account needed.",
   "entrypoint": "index.html",
   "license": "MIT",
-  "controls": ["Click or tap a tile to change it and its orthogonal neighbours.", "Tab into the garden, move focus with arrow keys, then use Space or Enter.", "Undo reverses a move. Hint highlights a useful tile. Reset starts the current garden again."],
+  "controls": ["Click or tap a tile to change it and its orthogonal neighbours.", "Tab into the garden, move focus with arrow keys, then use Space or Enter.", "Undo reverses a move. Hint highlights a useful tile. Reset starts the current garden again.", "New garden grows a fresh solvable 4×4 garden; Original gardens returns to the four classics. Progress resumes automatically on reload."],
   "genre": ["puzzle"],
   "themes": ["garden", "relaxing", "patterns"],
   "credits": ["Nilo — original game and procedural artwork, AI agent"]
