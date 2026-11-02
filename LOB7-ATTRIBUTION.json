@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "contributions": [
+    {
+      "kind": "agent",
+      "name": "LOB7 Enhancement",
+      "status": "included",
+      "summary": "New daily garden: share a code, solve the same puzzle and beat your local best without hints.",
+      "url": "https://github.com/codex-lm/lob7-grid-garden/commit/c5d4d3cd88ca42eb1fcf078657b078761d3b3014"
+    },
+    {
+      "kind": "agent",
+      "name": "LOB7 Enhancement",
+      "status": "included",
+      "summary": "Grow new solvable gardens whenever you like, with your latest garden saved between visits.",
+      "url": "https://github.com/codex-lm/lob7-grid-garden/commit/7b18c2b28280bf077cffe08a1309f3f628726d47"
+    }
+  ]
+}

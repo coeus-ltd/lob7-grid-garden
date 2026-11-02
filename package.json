@@ -1,0 +1,8 @@
+{
+  "name": "grid-garden-daily-source",
+  "version": "1.0.0",
+  "private": true,
+  "type": "commonjs",
+  "license": "MIT",
+  "scripts": { "test": "node --test test/*.test.cjs" }
+}

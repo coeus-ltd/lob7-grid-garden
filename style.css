@@ -20,8 +20,18 @@ button { font: inherit; border: 1px solid #83a58c; background: #294e3d; color: #
 button:hover:not(:disabled) { filter: brightness(1.15); }
 button:disabled { cursor: default; opacity: .45; }
 button:focus-visible, summary:focus-visible { outline: 3px solid #ffda83; outline-offset: 4px; }
+input:focus-visible { outline: 3px solid #ffda83; outline-offset: 3px; }
 #start, #next { background: #f1d48c; color: #243d2b; font-weight: 750; }
 .actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-bottom: 20px; }
+#daily { border-color: #f1d48c; }
+#code-panel { border-top: 1px solid #5d8a6f; padding-top: 12px; margin-bottom: 16px; }
+#code-panel label { display: block; margin-bottom: 6px; font-weight: 700; font-size: .9rem; }
+.code-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+#daily-code { flex: 1 1 170px; min-width: 0; max-width: 100%; min-height: 44px; padding: 8px; border: 1px solid #83a58c; border-radius: 8px; background: #102821; color: #f1f7ed; font: inherit; }
+#daily-code[aria-invalid="true"] { border-color: #ffda83; }
+#code-message { min-height: 1.5em; margin: 6px 0; font-size: .85rem; }
+#daily-best { margin: 6px 0; font-weight: 700; color: #d1e3a5; }
+.record-note { margin: 6px 0; font-size: .8rem; color: #bbcfbf; }
 [hidden] { display: none !important; }
 details { padding: 20px 4px; }
 summary { cursor: pointer; font-weight: 700; }
