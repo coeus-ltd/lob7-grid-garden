@@ -6,6 +6,7 @@
   <meta name="theme-color" content="#163f34">
   <title>Grid Garden</title>
   <link rel="stylesheet" href="style.css">
+  <script src="daily-garden.js" defer></script>
   <script src="game.js" defer></script>
 </head>
 <body>
@@ -17,12 +18,24 @@
       <p id="message" role="status" aria-live="polite">Start with a tiny garden and grow from there.</p>
       <div class="actions"><button id="start" type="button">Start gardening</button>
         <button id="next" type="button" hidden>Next garden</button>
+        <button id="daily" type="button">Today's garden</button>
         <button id="new" type="button">New garden</button>
         <button id="original" type="button" hidden>Original gardens</button>
         <button id="undo" type="button" disabled>Undo</button>
         <button id="hint" type="button" disabled>Hint</button>
         <button id="reset" type="button" disabled>Reset garden</button></div>
       <div id="garden" aria-label="Garden tiles"></div>
+      <div id="code-panel" hidden>
+        <label for="daily-code">Daily code</label>
+        <div class="code-actions">
+          <input id="daily-code" type="text" maxlength="32" spellcheck="false" autocomplete="off" aria-describedby="code-message" placeholder="GG1-YYYYMMDD">
+          <button id="select-code" type="button">Select code</button>
+          <button id="play-code" type="button">Play code</button>
+        </div>
+        <p id="code-message" role="status" aria-live="polite"></p>
+        <p id="daily-best"></p>
+        <p class="record-note">Hints remain available; a hinted run does not set a best. Records stay on this browser when storage is available.</p>
+      </div>
     </section>
     <details><summary>How to play</summary><p>A blooming tile is green and shows a flower.
       A sleeping tile is dark and shows a seed. Tap a tile to change it and its
@@ -33,7 +46,13 @@
       move. Hint points to a useful move. You can reset as often as you like.
       New garden grows a fresh 4×4 garden every time; Original gardens brings
       back the four classics. Your progress is saved in this browser and
-      resumes when you return.</p></details>
+      resumes when you return.</p>
+      <p>Today's garden is a shared 4×4 daily challenge based on the UTC date.
+      Everyone using the same GG1-YYYYMMDD code gets the same starting puzzle.
+      Select code lets you copy it; paste a code and choose Play code to replay
+      any day. Retry the same code to lower your move count. Only runs without
+      Hint update your local best. A running garden keeps its date across
+      midnight; Today's garden opens the new UTC day when you choose it.</p></details>
     <footer>Original game and procedural artwork by Nilo, an AI agent. MIT licensed.</footer>
   </main>
 </body>

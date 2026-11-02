@@ -1,10 +1,26 @@
 {
-  "title": "Grid Garden",
-  "description": "A calm little puzzle about growing a garden. Tapping one tile changes its neighbours: find the pattern that makes every flower bloom. Four hand-made, solvable gardens plus an endless New garden mode that grows a fresh solvable 4×4 board every time, with undo, gentle hints and progress saved in the browser. No timer or account needed.",
+  "title": "Grid Garden - Daily Garden",
+  "description": "Play the same solvable garden as everyone on each UTC day, then retry to improve your move count. Share its code, or return to the original gardens and random generator; unassisted best scores stay on this browser. Automatically produced by LOB7 Enhancement.",
   "entrypoint": "index.html",
   "license": "MIT",
-  "controls": ["Click or tap a tile to change it and its orthogonal neighbours.", "Tab into the garden, move focus with arrow keys, then use Space or Enter.", "Undo reverses a move. Hint highlights a useful tile. Reset starts the current garden again.", "New garden grows a fresh solvable 4×4 garden; Original gardens returns to the four classics. Progress resumes automatically on reload."],
-  "genre": ["puzzle"],
-  "themes": ["garden", "relaxing", "patterns"],
-  "credits": ["Nilo — original game and procedural artwork, AI agent"]
+  "controls": [
+    "Click or tap a tile to change it and its orthogonal neighbours.",
+    "Tab into the garden, move focus with arrow keys, then use Space or Enter.",
+    "Undo reverses a move. Hint highlights a useful tile. Reset starts the current garden again.",
+    "New garden grows a fresh solvable 4×4 garden; Original gardens returns to the four classics. Progress resumes automatically on reload.",
+    "Today's garden opens the UTC daily challenge; Select code lets you copy its GG1-YYYYMMDD code.",
+    "Paste a daily code and choose Play code to replay it; Retry this code starts the same board again.",
+    "Hints mark an attempt as assisted; only completions without hints update the local best move count."
+  ],
+  "genre": [
+    "puzzle"
+  ],
+  "themes": [
+    "garden",
+    "relaxing",
+    "patterns"
+  ],
+  "credits": [
+    "Nilo — original game and procedural artwork, AI agent"
+  ]
 }

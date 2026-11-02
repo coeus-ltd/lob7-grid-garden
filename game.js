@@ -8,6 +8,15 @@
   const nextButton = document.getElementById('next');
   const newButton = document.getElementById('new');
   const originalButton = document.getElementById('original');
+  const dailyButton = document.getElementById('daily');
+  const codePanel = document.getElementById('code-panel');
+  const codeInput = document.getElementById('daily-code');
+  const playCodeButton = document.getElementById('play-code');
+  const selectCodeButton = document.getElementById('select-code');
+  const codeMessage = document.getElementById('code-message');
+  const bestLabel = document.getElementById('daily-best');
+  const daily = window.GridDaily;
+  const sessionBests = Object.create(null);
   const undoButton = document.getElementById('undo');
   const hintButton = document.getElementById('hint');
   const resetButton = document.getElementById('reset');
@@ -21,6 +30,8 @@
   let mode = 'original';
   let levelIndex = 0;
   let generatedSeed = [];
+  let dailyChallenge = null;
+  let assisted = false;
   let board = [];
   let solution = new Set();
   let history = [];
@@ -39,7 +50,17 @@
     if (performance.now() - lastActivity >= 2000) { lastActivity = performance.now(); signal('activity'); }
   }
   function currentLevel() {
+    if (mode === 'daily') return { size: 4, seed: dailyChallenge.seed, name: 'Daily garden' };
     return mode === 'generated' ? { size: 4, seed: generatedSeed, name: 'A fresh garden' } : levels[levelIndex];
+  }
+  function dailyStorage() {
+    try { return window.localStorage; } catch (_) { return null; }
+  }
+  function bestForCode() {
+    const code = dailyChallenge.code;
+    const stored = daily.readBest(dailyStorage(), code);
+    if (stored !== null) sessionBests[code] = Math.min(sessionBests[code] ?? Infinity, stored);
+    return sessionBests[code] ?? null;
   }
   function change(index) {
     const size = currentLevel().size;
@@ -51,7 +72,8 @@
   }
   function save() {
     try {
-      localStorage.setItem(SAVE_KEY, JSON.stringify({ version: 1, mode, levelIndex, seed: generatedSeed, history }));
+      localStorage.setItem(SAVE_KEY, JSON.stringify({ version: 2, mode, levelIndex, seed: generatedSeed, history,
+        ...(mode === 'daily' ? { code: dailyChallenge.code, assisted } : {}) }));
     } catch (error) { /* storage unavailable: play on without persistence */ }
   }
   function load() {
@@ -61,11 +83,16 @@
       if (!raw || raw.length > 25000) return null;
       data = JSON.parse(raw);
     } catch (error) { return null; }
-    if (!data || data.version !== 1 || !['original', 'generated'].includes(data.mode)
+    if (!data || ![1, 2].includes(data.version) || !['original', 'generated', 'daily'].includes(data.mode)
       || !Number.isInteger(data.levelIndex) || data.levelIndex < 0 || data.levelIndex >= levels.length) return null;
     const savedMode = data.mode;
+    let savedDaily = null;
+    if (savedMode === 'daily') {
+      if (data.version !== 2 || typeof data.assisted !== 'boolean') return null;
+      try { savedDaily = daily.parse(data.code); } catch (_) { return null; }
+    }
     const index = data.levelIndex;
-    const size = savedMode === 'generated' ? 4 : levels[index].size;
+    const size = savedMode === 'original' ? levels[index].size : 4;
     if (!Array.isArray(data.seed) || data.seed.length > 16
       || data.seed.some(n => !Number.isInteger(n) || n < 0 || n >= 16)) return null;
     const seed = [...new Set(data.seed)];
@@ -73,7 +100,7 @@
     if (!Array.isArray(data.history) || data.history.length > 4096
       || data.history.some(n => !Number.isInteger(n) || n < 0 || n >= size * size)) return null;
     const moves = data.history.slice();
-    return { mode: savedMode, levelIndex: index, seed, history: moves };
+    return { mode: savedMode, levelIndex: index, seed, history: moves, daily: savedDaily, assisted: data.assisted === true };
   }
   function render(focusIndex) {
     const level = currentLevel();
@@ -98,18 +125,29 @@
       });
       garden.append(tile);
     });
-    levelLabel.textContent = mode === 'generated'
+    levelLabel.textContent = mode === 'daily' ? `Daily garden · ${dailyChallenge.day} UTC` : mode === 'generated'
       ? 'A fresh garden · new every time'
       : `Garden ${levelIndex + 1}/${levels.length} · ${levels[levelIndex].name}`;
     movesLabel.textContent = `Moves: ${history.length}`;
     undoButton.disabled = state !== 'playing' || history.length === 0;
     hintButton.disabled = state !== 'playing';
-    resetButton.disabled = state === 'ready' || state === 'finished';
-    originalButton.hidden = mode !== 'generated';
+    resetButton.disabled = state === 'ready' || (state === 'finished' && mode !== 'daily');
+    resetButton.textContent = mode === 'daily' && state === 'finished' ? 'Retry this code' : 'Reset garden';
+    originalButton.hidden = mode === 'original';
+    codePanel.hidden = mode !== 'daily';
+    if (mode === 'daily') {
+      const best = bestForCode();
+      bestLabel.textContent = best === null ? 'Best without hints: not set yet.'
+        : `Best without hints on this browser: ${best} ${best === 1 ? 'move' : 'moves'}.`;
+    }
     if (focusIndex !== undefined && state === 'playing') garden.children[focusIndex].focus();
   }
-  function setup(savedHistory = []) {
+  function setup(savedHistory = [], savedAssisted = false) {
     const level = currentLevel();
+    assisted = mode === 'daily' && savedAssisted;
+    codeMessage.textContent = '';
+    codeInput.removeAttribute('aria-invalid');
+    if (mode === 'daily') codeInput.value = dailyChallenge.code;
     board = Array(level.size * level.size).fill(true);
     solution = new Set(); history = []; hint = -1;
     for (const index of level.seed) change(index);
@@ -117,7 +155,8 @@
     state = 'playing';
     message.textContent = savedHistory.length
       ? `${board.filter(Boolean).length} of ${board.length} flowers are blooming. Welcome back.`
-      : mode === 'generated'
+      : mode === 'daily' ? 'Everyone gets the same garden for this UTC day. Solve it in as few moves as you can.'
+        : mode === 'generated'
         ? 'A fresh garden grown from hidden presses. There is always a way.'
         : levelIndex === 0
           ? 'Try the centre tile. What happens to its neighbours?'
@@ -145,7 +184,16 @@
   }
   function completeGarden(notify = true) {
       const moves = `${history.length} ${history.length === 1 ? 'move' : 'moves'}`;
-      if (mode === 'generated') {
+      if (mode === 'daily') {
+        state = 'finished';
+        if (!assisted) {
+          const code = dailyChallenge.code;
+          const recorded = daily.recordBest(dailyStorage(), code, history.length);
+          if (recorded !== null) sessionBests[code] = Math.min(sessionBests[code] ?? Infinity, recorded);
+        }
+        message.textContent = assisted ? `Daily garden complete in ${moves}, with hints. Best scores count runs without hints.`
+          : `Daily garden complete in ${moves}! Retry the same code to improve your best.`;
+      } else if (mode === 'generated') {
         state = 'finished'; message.textContent = `Fresh garden complete in ${moves}! New garden grows another.`;
       } else if (levelIndex === levels.length - 1) {
         state = 'finished'; message.textContent = `Garden complete in ${moves}! Every garden is in bloom. Beautifully done!`;
@@ -165,6 +213,7 @@
     save();
     render(index);
     if (state === 'between') nextButton.focus();
+    else if (state === 'finished' && mode === 'daily') resetButton.focus();
     else if (state === 'finished' && mode === 'generated') newButton.focus();
     else if (state === 'finished') startButton.focus();
   }
@@ -175,10 +224,36 @@
     growGarden(); activity();
   });
   originalButton.addEventListener('click', () => {
-    if (mode !== 'generated') return;
+    if (mode === 'original') return;
     mode = 'original'; setup(); activity();
   });
-  resetButton.addEventListener('click', () => { if (state === 'playing' || state === 'between') { setup(); activity(); } });
+  function playDaily(challenge) {
+    const newSession = state === 'ready' || state === 'finished';
+    mode = 'daily'; dailyChallenge = challenge; setup();
+    if (newSession) signal('start');
+    activity();
+  }
+  dailyButton.addEventListener('click', () => playDaily(daily.create(daily.utcDay())));
+  playCodeButton.addEventListener('click', () => {
+    let challenge;
+    try { challenge = daily.parse(codeInput.value); } catch (_) {
+      codeMessage.textContent = 'Use GG1-YYYYMMDD with a real date, for example GG1-20261102. Your current garden is unchanged.';
+      codeInput.setAttribute('aria-invalid', 'true'); codeInput.focus(); return;
+    }
+    playDaily(challenge);
+  });
+  selectCodeButton.addEventListener('click', () => {
+    codeInput.value = dailyChallenge.code; codeInput.removeAttribute('aria-invalid');
+    codeInput.focus(); codeInput.select();
+    codeMessage.textContent = 'Code selected. Copy it to share this daily garden.';
+  });
+  resetButton.addEventListener('click', () => {
+    if (state === 'playing' || state === 'between' || (state === 'finished' && mode === 'daily')) {
+      const newSession = state === 'finished'; setup();
+      if (newSession) signal('start');
+      activity();
+    }
+  });
   undoButton.addEventListener('click', () => {
     if (state !== 'playing' || !history.length) return;
     const index = history.pop(); change(index); hint = -1;
@@ -186,9 +261,10 @@
   });
   hintButton.addEventListener('click', () => {
     if (state !== 'playing') return;
+    if (mode === 'daily') assisted = true;
     hint = solution.values().next().value;
     message.textContent = 'The highlighted tile is a useful next move. You still make the choice.';
-    render(hint); activity();
+    save(); render(hint); activity();
   });
   document.addEventListener('visibilitychange', () => {
     if (document.hidden && (state === 'playing' || state === 'between')) { pauseFromVisibility = true; signal('pause'); }
@@ -196,13 +272,11 @@
   });
   const saved = load();
   if (saved) {
-    mode = saved.mode; levelIndex = saved.levelIndex; generatedSeed = saved.seed;
-    setup(saved.history);
+    mode = saved.mode; levelIndex = saved.levelIndex; generatedSeed = saved.seed; dailyChallenge = saved.daily;
+    setup(saved.history, saved.assisted);
     resumePending = true;
   } else {
-    board = Array(9).fill(true);
-    render();
-    levelLabel.textContent = 'Four small gardens. No time limit.';
+    mode = 'daily'; dailyChallenge = daily.create(daily.utcDay()); setup(); resumePending = true;
   }
   signal('ready');
 })();
